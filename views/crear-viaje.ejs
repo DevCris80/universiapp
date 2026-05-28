@@ -157,22 +157,28 @@
     function reverseGeocode(lat, lng) {
       var input = document.getElementById('direccion')
       input.placeholder = 'Obteniendo direcci\u00F3n...'
-      fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&accept-language=es', {
+      var timedOut = false
+      var t = setTimeout(function() { timedOut = true; input.placeholder = 'Direcci\u00F3n / Referencia' }, 5000)
+      fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json', {
         headers: { 'User-Agent': 'UniversiApp/1.0' }
       }).then(function(r) { return r.json() }).then(function(data) {
-        var a = data.address || {}
-        var parts = []
-        if (a.road) {
-          var street = a.road
-          if (a.house_number) street += ' # ' + a.house_number
-          parts.push(street)
+        if (timedOut) return
+        clearTimeout(t)
+        if (data && data.display_name) {
+          var parts = []
+          if (data.address && data.address.road) {
+            var street = data.address.road
+            if (data.address.house_number) street += ' # ' + data.address.house_number
+            parts.push(street)
+            if (data.address.suburb) parts.push(data.address.suburb)
+            if (data.address.city || data.address.town || data.address.village)
+              parts.push(data.address.city || data.address.town || data.address.village)
+          }
+          input.value = parts.length ? parts.join(', ') : data.display_name
         }
-        if (a.suburb) parts.push(a.suburb)
-        if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village)
-        input.value = parts.join(', ') || data.display_name || ''
         input.placeholder = 'Direcci\u00F3n / Referencia'
       }).catch(function() {
-        input.placeholder = 'Direcci\u00F3n / Referencia'
+        if (!timedOut) { clearTimeout(t); input.placeholder = 'Direcci\u00F3n / Referencia' }
       })
     }
 
