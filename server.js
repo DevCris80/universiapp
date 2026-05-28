@@ -14,18 +14,22 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
+app.set('trust proxy', 1)
 
 app.use(session({
   store: new pgSession({
     pool: db.pool,
     tableName: 'session',
-    createTableIfMissing: true
+    createTableIfMissing: true,
+    errorLog: console.error
   }),
   secret: process.env.SESSION_SECRET || 'universi-app-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000
   }
 }))

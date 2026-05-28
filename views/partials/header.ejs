@@ -32,13 +32,30 @@
           }
         })
       })
+      var hamburger = document.getElementById('hamburger')
+      var mobileNav = document.getElementById('mobile-nav')
+      if (hamburger && mobileNav) {
+        hamburger.addEventListener('click', function() {
+          hamburger.classList.toggle('open')
+          mobileNav.classList.toggle('open')
+        })
+        mobileNav.querySelectorAll('a').forEach(function(link) {
+          link.addEventListener('click', function() {
+            hamburger.classList.remove('open')
+            mobileNav.classList.remove('open')
+          })
+        })
+      }
     })
   </script>
 </head>
 <body>
   <header class="header">
     <a href="/" class="header-logo">UniversiApp</a>
-    <nav>
+    <button class="hamburger" id="hamburger" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="mobile-nav">
       <ul class="header-nav">
         <li><a href="/">Inicio</a></li>
         <li><a href="/#viajes-section" class="smooth-scroll">Ver Viajes</a></li>
@@ -49,8 +66,18 @@
           <li><a href="/login">Acceder</a></li>
         <% } %>
       </ul>
+      <div class="header-cta">
+        <% if (typeof usuario !== 'undefined' && usuario) { %>
+          <form action="/logout" method="POST" style="display:inline;">
+            <button type="submit" class="btn-secondary" style="font-size:0.65rem;padding:0.375rem 0.75rem;animation:none;margin:0;">Cerrar Sesión</button>
+          </form>
+        <% } else { %>
+          <span class="status-dot"></span>
+          Viajes Universitarios
+        <% } %>
+      </div>
     </nav>
-    <div class="header-cta">
+    <div class="header-cta desktop-cta">
       <% if (typeof usuario !== 'undefined' && usuario) { %>
         <form action="/logout" method="POST" style="display:inline;">
           <button type="submit" class="btn-secondary" style="font-size:0.65rem;padding:0.375rem 0.75rem;animation:none;margin:0;">Cerrar Sesión</button>
