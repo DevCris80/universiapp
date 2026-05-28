@@ -15,7 +15,7 @@
   <% if (viajesCreados.length) { %>
     <div class="table-wrap reveal">
       <table>
-        <thead><tr><th>Dirección</th><th>Vehículo</th><th>Tarifa</th><th>Hora</th><th>Cupos</th><th>Tipo</th><th>Estado</th><th>Solicitudes</th></tr></thead>
+        <thead><tr><th>Dirección</th><th>Vehículo</th><th>Tarifa</th><th>Hora</th><th>Cupos</th><th>Tipo</th><th>Estado</th><th>Solicitudes</th><th>Acción</th></tr></thead>
         <tbody>
           <% viajesCreados.forEach(function(v) { %>
             <tr>
@@ -27,6 +27,13 @@
               <td><span class="badge badge-<%= v.tipo_servicio === 'universidad' ? 'universidad' : 'destino' %>"><%= v.tipo_servicio === 'universidad' ? '🎓 Univ.' : '📍 Destino' %></span></td>
               <td><span class="badge badge-<%= v.activo ? 'accepted' : 'rejected' %>"><%= v.activo ? 'Activo' : 'Inactivo' %></span></td>
               <td><%= v.solicitudes_count || 0 %></td>
+              <td>
+                <% if (v.activo) { %>
+                  <form action="/viaje/<%= v.id %>/eliminar" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar este viaje permanentemente?')">
+                    <button type="submit" class="btn-secondary" style="font-size:0.65rem;padding:0.375rem 0.75rem;border-color:#dc2626;color:#dc2626;">Eliminar</button>
+                  </form>
+                <% } %>
+              </td>
             </tr>
           <% }) %>
         </tbody>

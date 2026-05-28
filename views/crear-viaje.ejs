@@ -54,23 +54,60 @@
   </div>
 </section>
 
-<script>
+  <script>
   document.addEventListener('DOMContentLoaded', function() {
     var picker = L.map('map-picker').setView([4.6097, -74.0817], 14)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(picker)
     var marker = null
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        picker.setView([pos.coords.latitude, pos.coords.longitude], 15)
+        document.getElementById('lat').value = pos.coords.latitude.toFixed(6)
+        document.getElementById('lng').value = pos.coords.longitude.toFixed(6)
+        marker = L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(picker)
+        reverseGeocode(pos.coords.latitude, pos.coords.longitude)
+      })
+    }
+
     picker.on('click', function(e) {
       document.getElementById('lat').value = e.latlng.lat.toFixed(6)
       document.getElementById('lng').value = e.latlng.lng.toFixed(6)
       if (marker) picker.removeLayer(marker)
       marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(picker)
+      reverseGeocode(e.latlng.lat, e.latlng.lng)
     })
+
+    function reverseGeocode(lat, lng) {
+      var input = document.getElementById('direccion')
+      input.placeholder = 'Obteniendo direcci\u00F3n...'
+      fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&accept-language=es', {
+        headers: { 'User-Agent': 'UniversiApp/1.0' }
+      }).then(function(r) { return r.json() }).then(function(data) {
+        var a = data.address || {}
+        var parts = []
+        if (a.road) {
+          var street = a.road
+          if (a.house_number) street += ' # ' + a.house_number
+          parts.push(street)
+        }
+        if (a.suburb) parts.push(a.suburb)
+        if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village)
+        input.value = parts.join(', ') || data.display_name || ''
+        input.placeholder = 'Direcci\u00F3n / Referencia'
+      }).catch(function() {
+        input.placeholder = 'Direcci\u00F3n / Referencia'
+      })
+    }
 
     var cuposInput = document.getElementById('cupos')
     document.getElementById('vehiculo').addEventListener('change', function() {
       cuposInput.value = this.value === 'moto' ? 1 : this.value === 'carro' ? 3 : ''
     })
+
+    var now = new Date()
+    document.getElementById('hora_salida').value = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
   })
-</script>
+  </script>
 
 <%- include('partials/footer') %>

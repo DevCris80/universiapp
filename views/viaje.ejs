@@ -52,6 +52,11 @@
         <% if (typeof puede_editar !== 'undefined' && puede_editar) { %>
           <a href="/viaje/<%= viaje.id %>/editar" class="btn-secondary" style="flex:1;justify-content:center;">✏️ Editar viaje</a>
         <% } %>
+        <% if (typeof puede_eliminar !== 'undefined' && puede_eliminar) { %>
+          <form action="/viaje/<%= viaje.id %>/eliminar" method="POST" style="flex:1;">
+            <button type="submit" class="btn-secondary" style="width:100%;justify-content:center;border-color:#dc2626;color:#dc2626;" onclick="return confirm('¿Eliminar este viaje permanentemente?')">🗑️ Eliminar viaje</button>
+          </form>
+        <% } %>
         <% if (typeof puede_cancelar !== 'undefined' && puede_cancelar) { %>
           <form action="/viaje/<%= viaje.id %>/cancelar" method="POST" style="flex:1;">
             <button type="submit" class="btn-secondary" style="width:100%;justify-content:center;border-color:#dc2626;color:#dc2626;" onclick="return confirm('¿Estás seguro de cancelar este viaje?')">✕ Cancelar viaje</button>

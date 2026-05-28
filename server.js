@@ -84,6 +84,9 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { nombre, email, telefono, password } = req.body
+  if (!/^\d{10}$/.test(telefono)) {
+    return renderView(res, 'register', { usuario: null, error: 'El teléfono debe tener exactamente 10 dígitos' })
+  }
   const { rows: existing } = await db.query('SELECT id FROM usuarios WHERE email = $1', [email])
   if (existing.length > 0) {
     return renderView(res, 'register', { usuario: null, error: 'El email ya está registrado' })
@@ -150,8 +153,9 @@ app.get('/viaje/:id', requireAuth, async (req, res) => {
 
   const puede_editar = usuario.id === viaje.conductor_id && viaje.activo === true && !solicitudAceptada
   const puede_cancelar = solicitudAceptada && (usuario.id === viaje.conductor_id || usuario.id === solicitudAceptada.pasajero_id)
+  const puede_eliminar = usuario.id === viaje.conductor_id && !solicitudAceptada
 
-  renderView(res, 'viaje', { usuario, viaje, telefono, solicitud_estado, solicitudes_pendientes, puede_editar, puede_cancelar })
+  renderView(res, 'viaje', { usuario, viaje, telefono, solicitud_estado, solicitudes_pendientes, puede_editar, puede_cancelar, puede_eliminar })
 })
 
 app.post('/viaje/:id/solicitar', requireAuth, async (req, res) => {
@@ -231,6 +235,19 @@ app.post('/viaje/:id/cancelar', requireAuth, async (req, res) => {
 
   await db.query("UPDATE solicitudes SET estado = 'cancelada' WHERE id = $1", [solicitud.id])
   await db.query('UPDATE viajes SET activo = TRUE, cupos = cupos + 1 WHERE id = $1', [viajeId])
+
+  res.redirect('/perfil')
+})
+
+app.post('/viaje/:id/eliminar', requireAuth, async (req, res) => {
+  const { rows: viajes } = await db.query('SELECT * FROM viajes WHERE id = $1 AND conductor_id = $2', [req.params.id, req.session.userId])
+  if (viajes.length === 0) return res.redirect('/perfil')
+
+  const { rows: aceptada } = await db.query("SELECT id FROM solicitudes WHERE viaje_id = $1 AND estado = 'aceptada'", [req.params.id])
+  if (aceptada.length > 0) return res.redirect('/perfil')
+
+  await db.query('DELETE FROM solicitudes WHERE viaje_id = $1', [req.params.id])
+  await db.query('DELETE FROM viajes WHERE id = $1', [req.params.id])
 
   res.redirect('/perfil')
 })

@@ -26,7 +26,13 @@
       </ul>
     </nav>
     <div class="header-cta">
-      <span class="status-dot"></span>
-      Viajes Universitarios
+      <% if (typeof usuario !== 'undefined' && usuario) { %>
+        <form action="/logout" method="POST" style="display:inline;">
+          <button type="submit" class="btn-secondary" style="font-size:0.65rem;padding:0.375rem 0.75rem;animation:none;margin:0;">Cerrar Sesión</button>
+        </form>
+      <% } else { %>
+        <span class="status-dot"></span>
+        Viajes Universitarios
+      <% } %>
     </div>
   </header>
