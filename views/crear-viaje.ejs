@@ -103,7 +103,7 @@
 
     picker.on('click', function(e) {
       var tipo = document.getElementById('tipo_servicio').value
-      if (tipo === 'universidad') return
+      if (tipo === 'universidad' && currentPos) return
       placeMarker(e.latlng.lat, e.latlng.lng)
       reverseGeocode(e.latlng.lat, e.latlng.lng)
     })
@@ -129,14 +129,17 @@
       if (tipo === 'universidad') {
         badge.className = 'badge badge-universidad'
         badge.innerHTML = '🎓 Salgo desde mi ubicación actual'
-        hint.innerHTML = 'Tu ubicación actual es el punto de salida. El mapa no es interactivo en este modo.'
         if (currentPos) {
+          hint.innerHTML = 'Tu ubicación actual es el punto de salida. El mapa no es interactivo en este modo.'
           picker.setView(currentPos, 15)
           placeMarker(currentPos[0], currentPos[1])
           reverseGeocode(currentPos[0], currentPos[1])
+          picker.dragging.disable()
+        } else {
+          hint.innerHTML = 'No se pudo obtener tu ubicación. Haz clic en el mapa para marcar tu punto de salida.'
+          picker.dragging.enable()
         }
         if (uniMarker._icon) uniMarker._icon.style.opacity = '1'
-        picker.dragging.disable()
       } else {
         badge.className = 'badge badge-destino'
         badge.innerHTML = '📍 Elijo un punto de salida en el mapa'
@@ -182,6 +185,25 @@
     var cuposInput = document.getElementById('cupos')
     document.getElementById('vehiculo').addEventListener('change', function() {
       cuposInput.value = this.value === 'moto' ? 1 : this.value === 'carro' ? 3 : ''
+    })
+
+    var geoTimeout
+    document.getElementById('direccion').addEventListener('input', function() {
+      clearTimeout(geoTimeout)
+      var val = this.value.trim()
+      if (val.length < 5) return
+      geoTimeout = setTimeout(function() {
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(val) + '&format=json&limit=1&accept-language=es', {
+          headers: { 'User-Agent': 'UniversiApp/1.0' }
+        }).then(function(r) { return r.json() }).then(function(data) {
+          if (data.length > 0) {
+            var lat = parseFloat(data[0].lat)
+            var lng = parseFloat(data[0].lon)
+            placeMarker(lat, lng)
+            picker.setView([lat, lng], 15)
+          }
+        }).catch(function() {})
+      }, 800)
     })
 
     var now = new Date()

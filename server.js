@@ -24,8 +24,9 @@ app.use(session({
     errorLog: console.error
   }),
   secret: process.env.SESSION_SECRET || 'universi-app-secret-key-2024',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
+  rolling: true,
   cookie: {
     secure: true,
     httpOnly: true,
