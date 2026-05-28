@@ -10,6 +10,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/style.css">
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.location.hash === '#viajes-section') {
+        var el = document.getElementById('viajes-section')
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      }
+      document.querySelectorAll('.smooth-scroll').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          var hash = this.getAttribute('href')
+          if (hash.startsWith('/#')) {
+            var id = hash.slice(2)
+            if (window.location.pathname === '/') {
+              e.preventDefault()
+              var el = document.getElementById(id)
+              if (el) el.scrollIntoView({ behavior: 'smooth' })
+            }
+          }
+        })
+      })
+    })
+  </script>
 </head>
 <body>
   <header class="header">
@@ -17,6 +41,7 @@
     <nav>
       <ul class="header-nav">
         <li><a href="/">Inicio</a></li>
+        <li><a href="/#viajes-section" class="smooth-scroll">Ver Viajes</a></li>
         <% if (typeof usuario !== 'undefined' && usuario) { %>
           <li><a href="/viaje/nuevo">Publicar Viaje</a></li>
           <li><a href="/perfil">Perfil</a></li>
