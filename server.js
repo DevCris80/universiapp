@@ -257,6 +257,21 @@ app.post('/viaje/:id/eliminar', requireAuth, async (req, res) => {
   res.redirect('/perfil')
 })
 
+app.get('/api/geocode', async (req, res) => {
+  const { lat, lng } = req.query
+  if (!lat || !lng) return res.json({ error: 'lat y lng requeridos' })
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`, {
+      headers: { 'User-Agent': 'UniversiApp/1.0' }
+    })
+    if (!response.ok) return res.json({ error: 'Nominatim no disponible', display_name: `${lat}, ${lng}` })
+    const data = await response.json()
+    res.json(data)
+  } catch {
+    res.json({ error: 'Error de geocodificación', display_name: `${lat}, ${lng}` })
+  }
+})
+
 app.get('/api/viajes', async (req, res) => {
   const { lat, lng } = req.query
   const { rows: viajes } = await db.query(`
