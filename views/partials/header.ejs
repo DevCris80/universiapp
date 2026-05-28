@@ -51,13 +51,13 @@
 </head>
 <body>
   <header class="header">
-    <a href="/" class="header-logo">UniversiApp</a>
+    <a href="<%= typeof usuario !== 'undefined' && usuario ? '/perfil' : '/' %>" class="header-logo">UniversiApp</a>
     <button class="hamburger" id="hamburger" aria-label="Menú">
       <span></span><span></span><span></span>
     </button>
     <nav id="mobile-nav">
       <ul class="header-nav">
-        <li><a href="/">Inicio</a></li>
+        <li><a href="<%= typeof usuario !== 'undefined' && usuario ? '/perfil' : '/' %>">Inicio</a></li>
         <li><a href="/#viajes-section" class="smooth-scroll">Ver Viajes</a></li>
         <% if (typeof usuario !== 'undefined' && usuario) { %>
           <li><a href="/viaje/nuevo">Publicar Viaje</a></li>

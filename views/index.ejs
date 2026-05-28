@@ -12,7 +12,7 @@
     <div class="wave-curve"></div>
   </div>
   <div class="hero-btn-wrapper">
-    <a href="/register" class="btn-primary">Comenzar</a>
+    <a href="<%= typeof usuario !== 'undefined' && usuario ? '/perfil' : '/register' %>" class="btn-primary">Comenzar</a>
   </div>
 </section>
 
