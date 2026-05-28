@@ -8,11 +8,19 @@
     <% } %>
     <form action="/viaje/nuevo" method="POST" id="crear-viaje-form">
       <div class="form-group">
-        <label class="form-label">Ubicación del viaje</label>
+        <label class="form-label" for="tipo_servicio">Tipo de servicio</label>
+        <select class="form-select" id="tipo_servicio" name="tipo_servicio" required>
+          <option value="universidad">Hacia la Universidad 🎓</option>
+          <option value="destino">Hacia mi destino 📍</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ubicación de salida</label>
+        <div id="mode-badge" class="badge badge-universidad">🎓 Salgo desde mi ubicación actual</div>
         <div class="map-picker" id="map-picker"></div>
         <input type="hidden" name="lat" id="lat" required>
         <input type="hidden" name="lng" id="lng" required>
-        <small style="color:var(--text-muted);font-size:0.75rem;">Haz clic en el mapa para marcar tu punto de salida</small>
+        <small id="map-hint" class="map-hint"></small>
       </div>
       <div class="form-group">
         <label class="form-label" for="direccion">Dirección / Referencia</label>
@@ -24,13 +32,6 @@
           <option value="">Selecciona...</option>
           <option value="moto">Moto</option>
           <option value="carro">Carro</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="tipo_servicio">Tipo de servicio</label>
-        <select class="form-select" id="tipo_servicio" name="tipo_servicio" required>
-          <option value="universidad">Hacia la Universidad 🎓</option>
-          <option value="destino">Hacia mi destino 📍</option>
         </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
@@ -55,28 +56,104 @@
 </section>
 
   <script>
+  var UNIVERSIDAD_COORDS = [4.629, -74.065]
+
   document.addEventListener('DOMContentLoaded', function() {
-    var picker = L.map('map-picker').setView([4.6097, -74.0817], 14)
+    var picker = L.map('map-picker').setView(UNIVERSIDAD_COORDS, 14)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(picker)
     var marker = null
+    var uniMarker = L.marker(UNIVERSIDAD_COORDS, {
+      icon: L.divIcon({
+        className: 'uni-marker',
+        html: '<div style="background:#4338ca;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">🎓 U. Católica</div>',
+        iconSize: [120, 28],
+        iconAnchor: [60, 14]
+      })
+    }).addTo(picker)
+    var currentPos = null
 
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(function(pos) {
-        picker.setView([pos.coords.latitude, pos.coords.longitude], 15)
+        currentPos = [pos.coords.latitude, pos.coords.longitude]
+        picker.setView(currentPos, 15)
         document.getElementById('lat').value = pos.coords.latitude.toFixed(6)
         document.getElementById('lng').value = pos.coords.longitude.toFixed(6)
-        marker = L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(picker)
+        marker = L.marker(currentPos, {
+          icon: L.divIcon({
+            className: 'pos-marker',
+            html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 Salida</div>',
+            iconSize: [80, 28],
+            iconAnchor: [40, 14]
+          })
+        }).addTo(picker)
         reverseGeocode(pos.coords.latitude, pos.coords.longitude)
-      })
+      }, function() { updateMode(document.getElementById('tipo_servicio').value) })
+    } else {
+      updateMode(document.getElementById('tipo_servicio').value)
     }
 
+    L.circleMarker(UNIVERSIDAD_COORDS, {
+      radius: 14,
+      color: '#4338ca',
+      fillColor: '#4338ca',
+      fillOpacity: 0.15,
+      weight: 2
+    }).addTo(picker)
+
     picker.on('click', function(e) {
-      document.getElementById('lat').value = e.latlng.lat.toFixed(6)
-      document.getElementById('lng').value = e.latlng.lng.toFixed(6)
-      if (marker) picker.removeLayer(marker)
-      marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(picker)
+      var tipo = document.getElementById('tipo_servicio').value
+      if (tipo === 'universidad') return
+      placeMarker(e.latlng.lat, e.latlng.lng)
       reverseGeocode(e.latlng.lat, e.latlng.lng)
     })
+
+    function placeMarker(lat, lng) {
+      document.getElementById('lat').value = lat.toFixed(6)
+      document.getElementById('lng').value = lng.toFixed(6)
+      if (marker) picker.removeLayer(marker)
+      marker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: 'pos-marker',
+          html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 Salida</div>',
+          iconSize: [80, 28],
+          iconAnchor: [40, 14]
+        })
+      }).addTo(picker)
+    }
+
+    function updateMode(tipo) {
+      var badge = document.getElementById('mode-badge')
+      var hint = document.getElementById('map-hint')
+      if (tipo === 'universidad') {
+        badge.className = 'badge badge-universidad'
+        badge.innerHTML = '🎓 Salgo desde mi ubicación actual'
+        hint.innerHTML = 'Tu ubicación actual es el punto de salida. El mapa no es interactivo en este modo.'
+        if (currentPos) {
+          picker.setView(currentPos, 15)
+          placeMarker(currentPos[0], currentPos[1])
+          reverseGeocode(currentPos[0], currentPos[1])
+        }
+        if (uniMarker._icon) uniMarker._icon.style.opacity = '1'
+        picker.dragging.disable()
+      } else {
+        badge.className = 'badge badge-destino'
+        badge.innerHTML = '📍 Elijo un punto de salida en el mapa'
+        hint.innerHTML = 'Haz clic en el mapa para marcar tu punto de salida.'
+        if (!marker && currentPos) {
+          picker.setView(currentPos, 15)
+          placeMarker(currentPos[0], currentPos[1])
+          reverseGeocode(currentPos[0], currentPos[1])
+        }
+        if (uniMarker._icon) uniMarker._icon.style.opacity = '0.6'
+        picker.dragging.enable()
+      }
+    }
+
+    document.getElementById('tipo_servicio').addEventListener('change', function() {
+      updateMode(this.value)
+    })
+
+    updateMode('universidad')
 
     function reverseGeocode(lat, lng) {
       var input = document.getElementById('direccion')

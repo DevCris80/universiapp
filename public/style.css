@@ -532,6 +532,26 @@ body {
   border: 1px solid var(--border);
   overflow: hidden;
   margin-bottom: 1.25rem;
+  transition: opacity 0.4s var(--ease-premium);
+}
+
+#mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  transition: all 0.4s var(--ease-premium);
+}
+
+.map-hint {
+  display: block;
+  margin-top: -0.75rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
 }
 
 /* ===== TRIP DETAIL ===== */
