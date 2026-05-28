@@ -87,6 +87,9 @@ body {
 
 .header-nav a:hover::after { width: 100%; }
 
+#mobile-nav .header-cta { display: none; }
+#mobile-nav { display: flex; align-items: center; }
+
 .header-cta {
   display: flex;
   align-items: center;
