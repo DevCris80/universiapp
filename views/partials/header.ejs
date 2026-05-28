@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <% var titles = { index: 'Viajes Universitarios', login: 'Iniciar Sesión', register: 'Crear Cuenta', 'crear-viaje': 'Publicar Viaje', 'editar-viaje': 'Editar Viaje', viaje: 'Detalle del Viaje', perfil: 'Mi Perfil' } %>
+  <title>UniversiApp — <%= titles[typeof view !== 'undefined' ? view : ''] || 'UniversiApp' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="header-logo">UniversiApp</a>
+    <nav>
+      <ul class="header-nav">
+        <li><a href="/">Inicio</a></li>
+        <% if (typeof usuario !== 'undefined' && usuario) { %>
+          <li><a href="/viaje/nuevo">Publicar Viaje</a></li>
+          <li><a href="/perfil">Perfil</a></li>
+        <% } else { %>
+          <li><a href="/login">Acceder</a></li>
+        <% } %>
+      </ul>
+    </nav>
+    <div class="header-cta">
+      <span class="status-dot"></span>
+      Viajes Universitarios
+    </div>
+  </header>

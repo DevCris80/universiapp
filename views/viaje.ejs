@@ -1,0 +1,75 @@
+<%- include('partials/header', { view: 'viaje', usuario: usuario }) %>
+
+<% if (typeof viaje === 'undefined' || !viaje) { %>
+  <section class="detail-section">
+    <div class="detail-card">
+      <div class="flash-message flash-error">Viaje no encontrado</div>
+      <div style="margin-top:1.5rem;text-align:center;"><a href="/" class="btn-secondary">← Volver al mapa</a></div>
+    </div>
+  </section>
+<% } else { %>
+  <section class="detail-section reveal">
+    <div class="detail-card">
+      <h2 class="section-title" style="margin-bottom:1.5rem;">Viaje a <em><%= viaje.direccion %></em></h2>
+      <div class="detail-map" id="detail-map"></div>
+      <% if (typeof flash !== 'undefined' && flash) { %>
+        <div class="flash-message flash-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+      <div class="detail-info">
+        <div><div class="detail-field">Conductor</div><div class="detail-value"><%= viaje.conductor_nombre %></div></div>
+        <div><div class="detail-field">Vehículo</div><div class="detail-value"><%= viaje.vehiculo.charAt(0).toUpperCase() + viaje.vehiculo.slice(1) %></div></div>
+        <div><div class="detail-field">Tarifa</div><div class="detail-value" style="font-family:var(--font-display);font-size:1.5rem;color:var(--accent);">$<%= viaje.tarifa %> <small style="font-family:var(--font-body);font-size:0.8rem;color:var(--text-muted);">por puesto</small></div></div>
+        <div><div class="detail-field">Hora de salida</div><div class="detail-value"><%= viaje.hora_salida %></div></div>
+        <div><div class="detail-field">Cupos disponibles</div><div class="detail-value"><%= viaje.cupos %></div></div>
+        <div><div class="detail-field">Dirección</div><div class="detail-value"><%= viaje.direccion %></div></div>
+        <div><div class="detail-field">Tipo de servicio</div><div class="detail-value"><span class="badge badge-<%= viaje.tipo_servicio === 'universidad' ? 'universidad' : 'destino' %>"><%= viaje.tipo_servicio === 'universidad' ? '🎓 Hacia la Universidad' : '📍 Hacia el destino del conductor' %></span></div></div>
+      </div>
+      <% if (typeof telefono !== 'undefined' && telefono) { %>
+        <div class="detail-phone reveal">
+          <div class="detail-phone-label"><%= (typeof usuario !== 'undefined' && usuario && viaje.conductor_id === usuario.id) ? 'Teléfono del pasajero' : 'Teléfono del conductor' %></div>
+          <div class="detail-phone-number"><a href="tel:<%= telefono %>"><%= telefono %></a></div>
+          <div style="margin-top:0.75rem;display:flex;gap:0.75rem;justify-content:center;">
+            <a href="https://wa.me/<%= telefono.replace(/[^0-9]/g, '') %>" target="_blank" class="btn-secondary" style="font-size:0.7rem;padding:0.5rem 1rem;">WhatsApp</a>
+            <a href="tel:<%= telefono %>" class="btn-secondary" style="font-size:0.7rem;padding:0.5rem 1rem;">Llamar</a>
+          </div>
+        </div>
+      <% } %>
+      <div class="form-actions" style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <% var isConductor = typeof usuario !== 'undefined' && usuario && viaje.conductor_id === usuario.id %>
+        <% if (!isConductor && viaje.activo && !solicitud_estado) { %>
+          <form action="/viaje/<%= viaje.id %>/solicitar" method="POST" style="width:100%;">
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Solicitar Viaje</button>
+          </form>
+        <% } %>
+        <% if (typeof solicitud_estado !== 'undefined' && solicitud_estado) { %>
+          <p style="width:100%;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.2em;">
+            Ya <%= solicitud_estado === 'pendiente' ? 'solicitaste' : solicitud_estado === 'aceptada' ? 'aceptaron' : solicitud_estado === 'cancelada' ? 'cancelaste' : 'rechazaron' %> este viaje
+          </p>
+        <% } %>
+        <% if (isConductor && typeof solicitudes_pendientes !== 'undefined' && solicitudes_pendientes > 0) { %>
+          <p style="width:100%;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.2em;">Tienes <%= solicitudes_pendientes %> solicitud<%= solicitudes_pendientes !== 1 ? 'es' : '' %> pendiente<%= solicitudes_pendientes !== 1 ? 's' : '' %></p>
+        <% } %>
+        <% if (typeof puede_editar !== 'undefined' && puede_editar) { %>
+          <a href="/viaje/<%= viaje.id %>/editar" class="btn-secondary" style="flex:1;justify-content:center;">✏️ Editar viaje</a>
+        <% } %>
+        <% if (typeof puede_cancelar !== 'undefined' && puede_cancelar) { %>
+          <form action="/viaje/<%= viaje.id %>/cancelar" method="POST" style="flex:1;">
+            <button type="submit" class="btn-secondary" style="width:100%;justify-content:center;border-color:#dc2626;color:#dc2626;" onclick="return confirm('¿Estás seguro de cancelar este viaje?')">✕ Cancelar viaje</button>
+          </form>
+        <% } %>
+      </div>
+      <div style="margin-top:1.5rem;text-align:center;"><a href="/" class="btn-secondary">← Volver al mapa</a></div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var m = L.map('detail-map').setView([<%= viaje.lat %>, <%= viaje.lng %>], 15)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(m)
+      L.marker([<%= viaje.lat %>, <%= viaje.lng %>]).addTo(m).bindPopup('<strong><%= viaje.direccion %></strong>').openPopup()
+      setTimeout(function() { m.invalidateSize() }, 300)
+    })
+  </script>
+<% } %>
+
+<%- include('partials/footer') %>

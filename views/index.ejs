@@ -1,0 +1,87 @@
+<%- include('partials/header', { view: 'index', usuario: usuario }) %>
+
+<section class="hero">
+  <div class="mesh-bg"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">
+      <em>Viaja</em> seguro<br>vuelve <em>rápido</em>
+    </h1>
+    <p class="hero-sub">Comparte tu ruta en la U. Católica de Colombia — Bogotá</p>
+  </div>
+  <div class="wave-container">
+    <div class="wave-curve"></div>
+  </div>
+  <div class="hero-btn-wrapper">
+    <a href="/register" class="btn-primary">Comenzar</a>
+  </div>
+</section>
+
+<section class="section reveal" id="viajes-section">
+  <h2 class="section-title">Viajes <em>Activos</em></h2>
+  <div class="map-section reveal">
+    <div id="map"></div>
+  </div>
+  <div id="trip-list" class="trip-grid reveal">
+    <p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">Cargando viajes disponibles...</p>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var coords = { lat: null, lng: null }
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        coords.lat = pos.coords.latitude
+        coords.lng = pos.coords.longitude
+        loadTrips()
+      }, function() { loadTrips() })
+    } else { loadTrips() }
+    function loadTrips() {
+      var url = coords.lat ? '/api/viajes?lat=' + coords.lat + '&lng=' + coords.lng : '/api/viajes'
+      fetch(url).then(function(r) { return r.json() }).then(function(viajes) {
+        var list = document.getElementById('trip-list')
+        if (!viajes.length) {
+          list.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">No hay viajes activos cerca de ti.</p>'
+          return
+        }
+        list.innerHTML = viajes.map(function(v) {
+          var tipoLabel = v.tipo_servicio === 'universidad' ? '\uD83C\uDF93 Univ.' : '\uD83D\uDCCD Destino'
+          return '<a href="/viaje/' + v.id + '" class="trip-card" style="text-decoration:none;color:inherit;">' +
+            '<div class="trip-card-inner">' +
+              '<div class="trip-card-header">' +
+                '<span class="trip-vehicle">' + v.vehiculo + '</span>' +
+                '<span class="trip-price">$' + v.tarifa + ' <small>por puesto</small></span>' +
+              '</div>' +
+              '<div class="trip-address">' + escHtml(v.direccion) + '</div>' +
+              '<div class="trip-meta">' +
+                '<span>' + tipoLabel + '</span>' +
+                '<span>\uD83D\uDD50 ' + escHtml(v.hora_salida) + '</span>' +
+                '<span>\uD83D\uDC64 ' + v.cupos + ' cupo' + (v.cupos !== 1 ? 's' : '') + '</span>' +
+              '</div>' +
+              '<div class="trip-action-pill">Ver viaje \u2192</div>' +
+            '</div></a>'
+        }).join('')
+        initMap(viajes)
+      }).catch(function() {
+        document.getElementById('trip-list').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem;">Error al cargar viajes.</p>'
+      })
+    }
+    function initMap(viajes) {
+      if (window._map) window._map.remove()
+      var center = coords.lat ? [coords.lat, coords.lng] : [4.6097, -74.0817]
+      window._map = L.map('map').setView(center, 13)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(window._map)
+      if (coords.lat) {
+        L.circleMarker([coords.lat, coords.lng], { radius: 8, color: '#003472', fillColor: '#003472', fillOpacity: 0.3, weight: 2 }).addTo(window._map).bindPopup('<strong>Tu ubicaci\u00F3n</strong>')
+      }
+      viajes.forEach(function(v) {
+        var tipoPopup = v.tipo_servicio === 'universidad' ? '\uD83C\uDF93 Hacia la Universidad' : '\uD83D\uDCCD Hacia destino'
+        L.marker([v.lat, v.lng]).addTo(window._map).bindPopup('<strong>' + v.vehiculo.toUpperCase() + '</strong><br>$' + v.tarifa + ' \u00B7 ' + v.hora_salida + '<br>' + v.cupos + ' cupo' + (v.cupos !== 1 ? 's' : '') + '<br>' + tipoPopup + '<br><a href="/viaje/' + v.id + '" style="color:#003472;">Ver viaje \u2192</a>')
+      })
+      setTimeout(function() { window._map.invalidateSize() }, 300)
+    }
+    function escHtml(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML }
+  })
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,76 @@
+<%- include('partials/header', { view: 'crear-viaje', usuario: usuario }) %>
+
+<section class="form-section reveal" style="align-items: flex-start;">
+  <div class="form-card" style="max-width: 560px;">
+    <h2 class="section-title">Publicar <em>Viaje</em></h2>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="flash-message flash-error"><%= error %></div>
+    <% } %>
+    <form action="/viaje/nuevo" method="POST" id="crear-viaje-form">
+      <div class="form-group">
+        <label class="form-label">Ubicación del viaje</label>
+        <div class="map-picker" id="map-picker"></div>
+        <input type="hidden" name="lat" id="lat" required>
+        <input type="hidden" name="lng" id="lng" required>
+        <small style="color:var(--text-muted);font-size:0.75rem;">Haz clic en el mapa para marcar tu punto de salida</small>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="direccion">Dirección / Referencia</label>
+        <input class="form-input" type="text" id="direccion" name="direccion" placeholder="Ej: Puerta principal, bloque 3" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="vehiculo">Vehículo</label>
+        <select class="form-select" id="vehiculo" name="vehiculo" required>
+          <option value="">Selecciona...</option>
+          <option value="moto">Moto</option>
+          <option value="carro">Carro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="tipo_servicio">Tipo de servicio</label>
+        <select class="form-select" id="tipo_servicio" name="tipo_servicio" required>
+          <option value="universidad">Hacia la Universidad 🎓</option>
+          <option value="destino">Hacia mi destino 📍</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label" for="tarifa">Tarifa ($)</label>
+          <input class="form-input" type="number" id="tarifa" name="tarifa" placeholder="5000" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cupos">Cupos</label>
+          <input class="form-input" type="number" id="cupos" name="cupos" readonly required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="hora_salida">Hora de salida</label>
+        <input class="form-input" type="time" id="hora_salida" name="hora_salida" required>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Publicar Viaje</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var picker = L.map('map-picker').setView([4.6097, -74.0817], 14)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(picker)
+    var marker = null
+    picker.on('click', function(e) {
+      document.getElementById('lat').value = e.latlng.lat.toFixed(6)
+      document.getElementById('lng').value = e.latlng.lng.toFixed(6)
+      if (marker) picker.removeLayer(marker)
+      marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(picker)
+    })
+
+    var cuposInput = document.getElementById('cupos')
+    document.getElementById('vehiculo').addEventListener('change', function() {
+      cuposInput.value = this.value === 'moto' ? 1 : this.value === 'carro' ? 3 : ''
+    })
+  })
+</script>
+
+<%- include('partials/footer') %>

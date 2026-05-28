@@ -1,0 +1,5 @@
+node_modules/
+.env
+universi.db
+universi.db-shm
+universi.db-wal

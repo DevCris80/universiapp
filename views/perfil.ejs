@@ -1,0 +1,104 @@
+<%- include('partials/header', { view: 'perfil', usuario: usuario }) %>
+<%
+  var viajesCreados = typeof viajesCreados !== 'undefined' ? viajesCreados : []
+  var solicitudesRecibidas = typeof solicitudesRecibidas !== 'undefined' ? solicitudesRecibidas : []
+  var solicitudesEnviadas = typeof solicitudesEnviadas !== 'undefined' ? solicitudesEnviadas : []
+%>
+
+<section class="profile-section">
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="flash-message flash-<%= flash.type %>"><%= flash.message %></div>
+  <% } %>
+  <h2 class="section-title reveal">Mis <em>Viajes</em></h2>
+
+  <h3 class="section-subtitle">Como conductor</h3>
+  <% if (viajesCreados.length) { %>
+    <div class="table-wrap reveal">
+      <table>
+        <thead><tr><th>Dirección</th><th>Vehículo</th><th>Tarifa</th><th>Hora</th><th>Cupos</th><th>Tipo</th><th>Estado</th><th>Solicitudes</th></tr></thead>
+        <tbody>
+          <% viajesCreados.forEach(function(v) { %>
+            <tr>
+              <td><a href="/viaje/<%= v.id %>" style="color:var(--accent);text-decoration:none;"><%= v.direccion %></a></td>
+              <td style="text-transform:capitalize;"><%= v.vehiculo %></td>
+              <td>$<%= v.tarifa %></td>
+              <td><%= v.hora_salida %></td>
+              <td><%= v.cupos %></td>
+              <td><span class="badge badge-<%= v.tipo_servicio === 'universidad' ? 'universidad' : 'destino' %>"><%= v.tipo_servicio === 'universidad' ? '🎓 Univ.' : '📍 Destino' %></span></td>
+              <td><span class="badge badge-<%= v.activo ? 'accepted' : 'rejected' %>"><%= v.activo ? 'Activo' : 'Inactivo' %></span></td>
+              <td><%= v.solicitudes_count || 0 %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">No has publicado viajes aún. <a href="/viaje/nuevo" style="color:var(--accent);">Publica uno</a></p>
+  <% } %>
+
+  <h3 class="section-subtitle">Solicitudes recibidas</h3>
+  <% if (solicitudesRecibidas.length) { %>
+    <div class="table-wrap reveal">
+      <table>
+        <thead><tr><th>Viaje</th><th>Pasajero</th><th>Teléfono</th><th>Estado</th><th>Acción</th></tr></thead>
+        <tbody>
+          <% solicitudesRecibidas.forEach(function(s) { %>
+            <tr>
+              <td><a href="/viaje/<%= s.viaje_id %>" style="color:var(--accent);text-decoration:none;"><%= s.direccion %></a></td>
+              <td><%= s.pasajero_nombre %></td>
+              <td><%= s.pasajero_telefono || '—' %></td>
+              <td><span class="badge badge-<%= s.estado %>"><%= s.estado %></span></td>
+              <td>
+                <% if (s.estado === 'pendiente') { %>
+                  <form action="/viaje/<%= s.viaje_id %>/responder" method="POST" style="display:inline;">
+                    <input type="hidden" name="solicitud_id" value="<%= s.id %>">
+                    <input type="hidden" name="accion" value="aceptar">
+                    <button type="submit" class="btn-primary" style="font-size:0.65rem;padding:0.375rem 0.75rem;animation:none;">Aceptar</button>
+                  </form>
+                  <form action="/viaje/<%= s.viaje_id %>/responder" method="POST" style="display:inline;margin-left:0.5rem;">
+                    <input type="hidden" name="solicitud_id" value="<%= s.id %>">
+                    <input type="hidden" name="accion" value="rechazar">
+                    <button type="submit" class="btn-secondary" style="font-size:0.65rem;padding:0.375rem 0.75rem;">Rechazar</button>
+                  </form>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">No tienes solicitudes pendientes.</p>
+  <% } %>
+
+  <h3 class="section-subtitle">Mis solicitudes</h3>
+  <% if (solicitudesEnviadas.length) { %>
+    <div class="table-wrap reveal">
+      <table>
+        <thead><tr><th>Viaje</th><th>Conductor</th><th>Estado</th><th>Teléfono</th></tr></thead>
+        <tbody>
+          <% solicitudesEnviadas.forEach(function(s) { %>
+            <tr>
+              <td><a href="/viaje/<%= s.viaje_id %>" style="color:var(--accent);text-decoration:none;"><%= s.direccion %></a></td>
+              <td><%= s.conductor_nombre %></td>
+              <td><span class="badge badge-<%= s.estado %>"><%= s.estado %></span></td>
+              <td><%= s.conductor_telefono || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">No has solicitado ningún viaje.</p>
+  <% } %>
+
+  <div style="text-align:center;margin-top:2rem;">
+    <form action="/logout" method="POST" style="display:inline;">
+      <button type="submit" class="btn-secondary">Cerrar Sesión</button>
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

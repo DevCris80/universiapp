@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": null,
+  "functions": {
+    "api/index.js": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    { "src": "/(.*)", "dest": "api/index.js" }
+  ]
+}
