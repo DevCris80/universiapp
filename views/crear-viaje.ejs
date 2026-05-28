@@ -78,10 +78,11 @@
         picker.setView(currentPos, 15)
         document.getElementById('lat').value = pos.coords.latitude.toFixed(6)
         document.getElementById('lng').value = pos.coords.longitude.toFixed(6)
+        var label = document.getElementById('tipo_servicio').value === 'destino' ? 'Llegada' : 'Salida'
         marker = L.marker(currentPos, {
           icon: L.divIcon({
             className: 'pos-marker',
-            html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 Salida</div>',
+            html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 ' + label + '</div>',
             iconSize: [80, 28],
             iconAnchor: [40, 14]
           })
@@ -111,10 +112,11 @@
       document.getElementById('lat').value = lat.toFixed(6)
       document.getElementById('lng').value = lng.toFixed(6)
       if (marker) picker.removeLayer(marker)
+      var label = document.getElementById('tipo_servicio').value === 'destino' ? 'Llegada' : 'Salida'
       marker = L.marker([lat, lng], {
         icon: L.divIcon({
           className: 'pos-marker',
-          html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 Salida</div>',
+          html: '<div style="background:#171717;color:white;padding:4px 10px;border-radius:9999px;font:700 0.7rem/1 Inter,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">📍 ' + label + '</div>',
           iconSize: [80, 28],
           iconAnchor: [40, 14]
         })
