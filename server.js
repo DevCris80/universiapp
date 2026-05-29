@@ -111,7 +111,7 @@ app.get('/viaje/nuevo', requireAuth, async (req, res) => {
 
 app.post('/viaje/nuevo', requireAuth, async (req, res) => {
   const { lat, lng, direccion, vehiculo, tarifa, hora_salida, tipo_servicio } = req.body
-  const cupos = vehiculo === 'moto' ? 1 : 3
+  const cupos = parseInt(req.body.cupos) || (vehiculo === 'moto' ? 1 : 3)
   const ts = ['universidad', 'destino'].includes(tipo_servicio) ? tipo_servicio : 'destino'
   await db.query(
     'INSERT INTO viajes (conductor_id, lat, lng, direccion, vehiculo, tarifa, hora_salida, cupos, tipo_servicio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
